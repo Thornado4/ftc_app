@@ -33,6 +33,8 @@ public class CaluperAuto extends LinearOpMode {
     private double rServoArmInit = .1;
     private double lServoArmGrasp = .43;
     private double rServoArmGrasp = .50;
+    private double speedFactor = .5;
+    private int controlMode = 1;
 
     boolean blue = false;
     boolean red  = false;
@@ -67,6 +69,9 @@ public class CaluperAuto extends LinearOpMode {
             sleep(600);
             driveStop();
         }
+        jewelArm.setPosition(0);
+        sleep(3000);
+        jewelArm.setPosition(.5);
     }
 
     public void bumpBlueJewel() {
@@ -82,10 +87,14 @@ public class CaluperAuto extends LinearOpMode {
             sleep(600);
             driveStop();
         }
+        jewelArm.setPosition(0);
+        sleep(3000);
+        jewelArm.setPosition(.5);
     }
 
     @Override
     public void runOpMode() throws InterruptedException {
+        // ===================================INIT===================================
         lfDrive = hardwareMap.dcMotor.get("lfDrive"); //Left front drive, Hub 1, port 2
         lfDrive.setPower(0);
         lfDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -116,7 +125,7 @@ public class CaluperAuto extends LinearOpMode {
 
         sensorColor = hardwareMap.get(ColorSensor.class, "sensor_color_distance");
 
-        // BEGIN SELECTION
+        // =======================BEGIN SELECTION============================================
         telemetry.addData("Selection", "X for Blue, B for Red");
         telemetry.update();
         while(!blue && !red) {
@@ -143,19 +152,20 @@ public class CaluperAuto extends LinearOpMode {
             telemetry.addData("Team", "Red");
         }
 
-        if(leftStone) {
-            telemetry.addData("Stone", "Left");
-        } else if(rightStone) {
+        if(leftStone) {                         // The selection here is based on the field edge
+            telemetry.addData("Stone", "Left"); // without any cryptoboxes is on your right when you're blue.
+        } else if(rightStone) {                 // If you're red, it's on your left.
             telemetry.addData("Stone", "Right");
         }
 
         telemetry.update();
         waitForStart();
         timer.reset();
-        while(timer.seconds() < 30 || !AutoFinished) {                  // Begin Auto
+        // =======================================AUTONOMOUS==============================
+        while(timer.seconds() < 30 || !AutoFinished) {
             if(blue) {
                 if(leftStone) {
-                    // Auto
+                    // Ian's Auto
                     AutoFinished = true;
                 } else if(rightStone) {
                     // Auto
@@ -178,15 +188,98 @@ public class CaluperAuto extends LinearOpMode {
             telemetry.update();
         }
         timer.reset();
-        while(timer.seconds() <= 8 || !gamepad1.a) {                    // Transition Period
+        // =========================================TRANSITION===============================
+        while(timer.seconds() <= 8 || !gamepad1.a) {
             telemetry.addData("Auto finished!", timer.seconds());
             telemetry.addData("At 8s, Teleop will begin", "Override by pressing A"); // Just in case
-            telemetry.update();                                                 // timer is off
+            telemetry.update();                                        // timer won't let robot move
             sleep(50);
         }
         timer.reset();
-        while(opModeIsActive()) {                                   // TeleOp Begin!
-            // Teleop Code
-        }
+        //=================================TELEOP=========================================
+        while(opModeIsActive()) {
+            if(gamepad1.right_bumper) {
+                speedFactor = 1;
+            } else {
+                speedFactor = .5;
+            }
+
+            if(gamepad1.a) {            // classic
+                controlMode = 1;
+            } else if(gamepad1.y) {     // differential lock
+                controlMode = 2;
+            }
+
+            switch(controlMode) {       // apply power from joysticks to drive train based on control mode
+                case 1:
+                    lfDrive.setPower((-gamepad1.left_stick_y * Math.abs(gamepad1.left_stick_y)) * speedFactor); //exponential scale algorithm
+                    lbDrive.setPower((-gamepad1.left_stick_y * Math.abs(gamepad1.left_stick_y)) * speedFactor); //tank drive
+                    rfDrive.setPower((gamepad1.right_stick_y * Math.abs(gamepad1.right_stick_y)) * speedFactor);
+                    rbDrive.setPower((gamepad1.right_stick_y * Math.abs(gamepad1.right_stick_y)) * speedFactor);
+                    break;
+                case 2:
+                    lfDrive.setPower((-gamepad1.left_stick_y * Math.abs(gamepad1.left_stick_y)) * speedFactor); //exponential scale algorithm
+                    lbDrive.setPower((-gamepad1.left_stick_y * Math.abs(gamepad1.left_stick_y)) * speedFactor); //tank drive
+                    rfDrive.setPower((gamepad1.left_stick_y * Math.abs(gamepad1.left_stick_y)) * speedFactor);
+                    rbDrive.setPower((gamepad1.left_stick_y * Math.abs(gamepad1.left_stick_y)) * speedFactor);
+                    break;
+                default:
+                    lfDrive.setPower((-gamepad1.left_stick_y * Math.abs(gamepad1.left_stick_y)) * speedFactor); //exponential scale algorithm
+                    lbDrive.setPower((-gamepad1.left_stick_y * Math.abs(gamepad1.left_stick_y)) * speedFactor); //tank drive
+                    rfDrive.setPower((gamepad1.right_stick_y * Math.abs(gamepad1.right_stick_y)) * speedFactor);
+                    rbDrive.setPower((gamepad1.right_stick_y * Math.abs(gamepad1.right_stick_y)) * speedFactor);
+                    break;
+            }
+
+
+
+            if (gamepad2.dpad_up) {
+                liftMotor.setPower(1);
+            }
+            else if (gamepad2.dpad_down) {
+                liftMotor.setPower(-1);
+            }
+            else {
+                liftMotor.setPower(0);
+            }
+
+            if (gamepad2.dpad_up) {
+                liftMotor.setPower(1);
+            }
+            else if (gamepad2.dpad_down) {
+                liftMotor.setPower(-1);
+            }
+            else {
+                liftMotor.setPower(0);
+            }
+            if (gamepad1.b) { //hitting the "b" button on Gamepad 2 will cause the two servos to grasp the glyph
+                lServoArm.setPosition(lServoArmGrasp);
+                rServoArm.setPosition(rServoArmGrasp);
+            }
+            if (gamepad1.x) { //hitting the "x" button on Gamepad 2 will cause the two servos to return to their original position
+                lServoArm.setPosition(lServoArmInit);
+                rServoArm.setPosition(rServoArmInit);
+            }
+
+            if (gamepad2.b) { //hitting the "b" button on Gamepad 2 will cause the two servos to grasp the glyph
+                lServoArm.setPosition(lServoArmGrasp);
+                rServoArm.setPosition(rServoArmGrasp);
+            }
+            if (gamepad2.x) { //hitting the "x" button on Gamepad 2 will cause the two servos to return to their original position
+                lServoArm.setPosition(lServoArmInit);
+                rServoArm.setPosition(rServoArmInit);
+            }
+            if (gamepad2.y) { //hitting the "y" button on Gamepad 2 will cause the jewel arm to drop
+                jewelArm.setPosition(1);
+            } else {
+                jewelArm.setPosition(.5);
+            }
+
+            if (gamepad2.a) { //hitting the "a" button on Gamepad 2 will cause the jewel arm to lift
+                jewelArm.setPosition(0);
+            } else {
+                jewelArm.setPosition(.5);
+            }
+        }           // End of Teleop
     }
 }
