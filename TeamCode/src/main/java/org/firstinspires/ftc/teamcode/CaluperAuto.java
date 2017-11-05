@@ -45,88 +45,89 @@ public class CaluperAuto extends LinearOpMode {
     public void drive(double leftPower, double rightPower) {    // Turns on motors. The reason
         lfDrive.setPower(leftPower);                            // there are two powers is so the
         lbDrive.setPower(leftPower);                            // robot may be allowed to curve.
-        rfDrive.setPower(leftPower);
-        rbDrive.setPower(leftPower);
+        rfDrive.setPower(rightPower);
+        rbDrive.setPower(rightPower);
     }
 
-    public void driveStop() {
+    public void driveStop() {                                   // Stop robot motors
         lfDrive.setPower(0);
         lbDrive.setPower(0);
         rfDrive.setPower(0);
         rbDrive.setPower(0);
     }
 
-    public void bumpRedJewel() throws InterruptedException {
-        jewelArm.setPosition(1);
+    public void bumpRedJewel(int direction) throws InterruptedException {  // Knock the red jewel off. For blue side only.
+        jewelArm.setPosition(1);                    // Lower jewel bumper
         sleep(3000);
         jewelArm.setPosition(.5);
-        if(sensorColor.red() > sensorColor.blue()) {
-            drive(0.5, 0.5);
+        if(sensorColor.red() > sensorColor.blue()) {// Is detected jewel red?
+            drive(0.5 * direction, 0.5 * direction);// Drive to knock it off.
             sleep(600);
             driveStop();
-        } else if(sensorColor.blue() > sensorColor.red()) {
-            drive(0.5, 0.5);
+        } else if(sensorColor.blue() > sensorColor.red()) {// Is detected jewel blue?
+            drive(-0.5 * direction, -0.5 * direction);     // Drive to knock off red jewel
+            sleep(600);                                    // it's called indirect proof
+            drive(0.5 * direction, 0.5 * direction);       // Drive back on stone (We won't need it later on)
             sleep(600);
             driveStop();
         }
-        jewelArm.setPosition(0);
+        jewelArm.setPosition(0);                           // Raise jewel bumper
         sleep(3000);
         jewelArm.setPosition(.5);
     }
 
-    public void bumpBlueJewel() {
-        jewelArm.setPosition(1);
+    public void bumpBlueJewel(int direction) {              // Knock the blue jewel off. For red side only.
+        jewelArm.setPosition(1);                            // Lower jewel bumper
         sleep(3000);
         jewelArm.setPosition(.5);
-        if(sensorColor.blue() > sensorColor.red()) {
-            drive(0.5, 0.5);
+        if(sensorColor.blue() > sensorColor.red()) {        // Is detected jewel blue?
+            drive(0.5, 0.5);                                // Drive to knock it off.
             sleep(600);
             driveStop();
-        } else if(sensorColor.red() > sensorColor.blue()) {
-            drive(0.5, 0.5);
+        } else if(sensorColor.red() > sensorColor.blue()) { // Is detected jewel red?
+            drive(-0.5 * direction, -0.5 * direction);      // Drive to knock off blue jewel
+            sleep(600);                                     // it's called indirect proof
+            drive(0.5 * direction, 0.5 * direction);        // Drive back on stone (We won't need it later on)
             sleep(600);
             driveStop();
         }
-        jewelArm.setPosition(0);
+        jewelArm.setPosition(0);                            // Raise jewel bumper
         sleep(3000);
         jewelArm.setPosition(.5);
     }
 
     @Override
     public void runOpMode() throws InterruptedException {
-        // ===================================INIT===================================
+        // ===================================INIT==================================================
         lfDrive = hardwareMap.dcMotor.get("lfDrive"); //Left front drive, Hub 1, port 2
-        lfDrive.setPower(0);
-        lfDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
         lbDrive = hardwareMap.dcMotor.get("lbDrive"); //Left back drive, Hub 1, port 3
-        lbDrive.setPower(0);
-        lbDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
         rfDrive = hardwareMap.dcMotor.get("rfDrive"); //Right front drive, Hub 1, port 1
-        rfDrive.setPower(0);
-        rfDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
         rbDrive = hardwareMap.dcMotor.get("rbDrive"); //Right back drive, Hub 1, port 0
-        rbDrive.setPower(0);
-        rbDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
         liftMotor = hardwareMap.dcMotor.get("liftMotor"); //Lift motor, Hub 2, port 3
-        liftMotor.setPower(0);
 
         lServoArm = hardwareMap.servo.get("lServoArm"); //Left servo arm, Hub 1, port 2
-        lServoArm.setPosition(lServoArmInit);
-
         rServoArm = hardwareMap.servo.get("rServoArm"); //Right servo arm, Hub 2, port 1
-        rServoArm.setPosition(rServoArmInit);
-
         jewelArm = hardwareMap.servo.get("ja"); //Jewel Arm, Hub 1, Port 3
-        jewelArm.setPosition(.5);
 
         sensorColor = hardwareMap.get(ColorSensor.class, "sensor_color_distance");
 
-        // =======================BEGIN SELECTION============================================
-        telemetry.addData("Selection", "X for Blue, B for Red");
+        lfDrive.setPower(0);
+        lbDrive.setPower(0);
+        rfDrive.setPower(0);
+        rbDrive.setPower(0);
+        liftMotor.setPower(0);
+        lfDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        lbDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rfDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rbDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        liftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        lServoArm.setPosition(lServoArmInit);
+        rServoArm.setPosition(rServoArmInit);
+        jewelArm.setPosition(.5);
+
+        // =======================BEGIN SELECTION===================================================
+        telemetry.addData("Selection", "X for Blue, B for Red");        // Which side are you on?
         telemetry.update();
         while(!blue && !red) {
             if(gamepad1.x) {
@@ -136,7 +137,7 @@ public class CaluperAuto extends LinearOpMode {
             }
         }
         sleep(500);
-        telemetry.addData("Selection", "X for Left, B for Right");
+        telemetry.addData("Selection", "X for Left, B for Right");  // Which stone is the robot on?
         telemetry.update();
         while(!leftStone && !rightStone) {
             if(gamepad1.x) {
@@ -146,29 +147,37 @@ public class CaluperAuto extends LinearOpMode {
             }
         }
 
-        if(blue) {
-            telemetry.addData("Team", "Blue");
+        if(blue) {                              // Now we display what choices were made.
+            telemetry.addData("Team", "Blue");  // Delay isn't necessary for now.
         } else if(red) {
             telemetry.addData("Team", "Red");
         }
 
-        if(leftStone) {                         // The selection here is based on the field edge
-            telemetry.addData("Stone", "Left"); // without any cryptoboxes is on your right when you're blue.
+        if(leftStone) {                         // The display here is based on the field edge
+            telemetry.addData("Stone", "Left"); // without any cryptoboxes.
         } else if(rightStone) {                 // If you're red, it's on your left.
-            telemetry.addData("Stone", "Right");
+            telemetry.addData("Stone", "Right");// If you're blue, it's on your right.
         }
 
         telemetry.update();
         waitForStart();
         timer.reset();
-        // =======================================AUTONOMOUS==============================
+        // =======================================AUTONOMOUS========================================
         while(timer.seconds() < 30 || !AutoFinished) {
             if(blue) {
                 if(leftStone) {
                     // Ian's Auto
-                    AutoFinished = true;
+                    bumpRedJewel(1);
+                    drive(0.8, 0.6);
+                    sleep(2000);
+                    driveStop();
+                    AutoFinished = true;               // now that this is true, the loop can break.
                 } else if(rightStone) {
-                    // Auto
+                    // Thor's Auto
+                    bumpRedJewel(1);
+                    drive(0.6, 0.7);
+                    sleep(2000);
+                    driveStop();
                     AutoFinished = true;
                 }
             } else if (red) {
@@ -188,15 +197,15 @@ public class CaluperAuto extends LinearOpMode {
             telemetry.update();
         }
         timer.reset();
-        // =========================================TRANSITION===============================
-        while(timer.seconds() <= 8 || !gamepad1.a) {
+        // =========================================TRANSITION======================================
+        while(timer.seconds() < 8 || !gamepad1.a) {
             telemetry.addData("Auto finished!", timer.seconds());
             telemetry.addData("At 8s, Teleop will begin", "Override by pressing A"); // Just in case
             telemetry.update();                                        // timer won't let robot move
             sleep(50);
         }
         timer.reset();
-        //=================================TELEOP=========================================
+        //=================================TELEOP===================================================
         while(opModeIsActive()) {
             if(gamepad1.right_bumper) {
                 speedFactor = 1;
@@ -219,7 +228,7 @@ public class CaluperAuto extends LinearOpMode {
                     break;
                 case 2:
                     lfDrive.setPower((-gamepad1.left_stick_y * Math.abs(gamepad1.left_stick_y)) * speedFactor); //exponential scale algorithm
-                    lbDrive.setPower((-gamepad1.left_stick_y * Math.abs(gamepad1.left_stick_y)) * speedFactor); //tank drive
+                    lbDrive.setPower((-gamepad1.left_stick_y * Math.abs(gamepad1.left_stick_y)) * speedFactor); //differential lock
                     rfDrive.setPower((gamepad1.left_stick_y * Math.abs(gamepad1.left_stick_y)) * speedFactor);
                     rbDrive.setPower((gamepad1.left_stick_y * Math.abs(gamepad1.left_stick_y)) * speedFactor);
                     break;
@@ -283,3 +292,4 @@ public class CaluperAuto extends LinearOpMode {
         }           // End of Teleop
     }
 }
+// Please let Ian H. know if there is anything that needs to be fixed!
