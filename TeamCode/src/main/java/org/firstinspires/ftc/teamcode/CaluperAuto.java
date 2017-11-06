@@ -166,7 +166,7 @@ public class CaluperAuto extends LinearOpMode {
         while(timer.seconds() < 30 || !AutoFinished) {
             if(blue) {
                 if(leftStone) {
-                    // Ian's Auto
+                    // Ava's Auto
                     bumpRedJewel(1);
                     drive(0.8, 0.6);
                     sleep(2000);
@@ -175,17 +175,25 @@ public class CaluperAuto extends LinearOpMode {
                 } else if(rightStone) {
                     // Thor's Auto
                     bumpRedJewel(1);
-                    drive(0.6, 0.7);
+                    drive(0.6, 0.65);
                     sleep(2000);
                     driveStop();
                     AutoFinished = true;
                 }
             } else if (red) {
                 if(leftStone) {
-                    // Auto
+                    // Jake's Auto. This is just a placeholder until he gets his final flowchart finished
+                    bumpBlueJewel(-1);
+                    drive(-0.6, -0.65);
+                    sleep(2000);
+                    driveStop();
                     AutoFinished = true;
                 } else if(rightStone) {
-                    // Auto
+                    // Ian's Auto
+                    bumpBlueJewel(-1);
+                    drive(-0.8, -0.6);
+                    sleep(2000);
+                    driveStop();
                     AutoFinished = true;
                 }
             }
@@ -207,16 +215,16 @@ public class CaluperAuto extends LinearOpMode {
         timer.reset();
         //=================================TELEOP===================================================
         while(opModeIsActive()) {
-            if(gamepad1.right_bumper) {
+            if(gamepad1.right_bumper) {       // full power option
                 speedFactor = 1;
-            } else {
+            } else {                          // half power option
                 speedFactor = .5;
             }
 
-            if(gamepad1.a) {            // classic
-                controlMode = 1;
-            } else if(gamepad1.y) {     // differential lock
+            if(gamepad1.dpad_up) {            // differential lock if DPad up is held
                 controlMode = 2;
+            } else {                          // classic tank drive
+                controlMode = 1;
             }
 
             switch(controlMode) {       // apply power from joysticks to drive train based on control mode
@@ -227,10 +235,10 @@ public class CaluperAuto extends LinearOpMode {
                     rbDrive.setPower((gamepad1.right_stick_y * Math.abs(gamepad1.right_stick_y)) * speedFactor);
                     break;
                 case 2:
-                    lfDrive.setPower((-gamepad1.left_stick_y * Math.abs(gamepad1.left_stick_y)) * speedFactor); //exponential scale algorithm
-                    lbDrive.setPower((-gamepad1.left_stick_y * Math.abs(gamepad1.left_stick_y)) * speedFactor); //differential lock
-                    rfDrive.setPower((gamepad1.left_stick_y * Math.abs(gamepad1.left_stick_y)) * speedFactor);
-                    rbDrive.setPower((gamepad1.left_stick_y * Math.abs(gamepad1.left_stick_y)) * speedFactor);
+                    lfDrive.setPower((-gamepad1.right_stick_y * Math.abs(gamepad1.right_stick_y)) * speedFactor); //exponential scale algorithm
+                    lbDrive.setPower((-gamepad1.right_stick_y * Math.abs(gamepad1.right_stick_y)) * speedFactor); //differential lock
+                    rfDrive.setPower((gamepad1.right_stick_y * Math.abs(gamepad1.right_stick_y)) * speedFactor);
+                    rbDrive.setPower((gamepad1.right_stick_y * Math.abs(gamepad1.right_stick_y)) * speedFactor);
                     break;
                 default:
                     lfDrive.setPower((-gamepad1.left_stick_y * Math.abs(gamepad1.left_stick_y)) * speedFactor); //exponential scale algorithm
@@ -261,11 +269,11 @@ public class CaluperAuto extends LinearOpMode {
             else {
                 liftMotor.setPower(0);
             }
-            if (gamepad1.b) { //hitting the "b" button on Gamepad 2 will cause the two servos to grasp the glyph
+            if (gamepad1.b) { //hitting the "b" button on Gamepad 1 will cause the two servos to grasp the glyph
                 lServoArm.setPosition(lServoArmGrasp);
                 rServoArm.setPosition(rServoArmGrasp);
             }
-            if (gamepad1.x) { //hitting the "x" button on Gamepad 2 will cause the two servos to return to their original position
+            if (gamepad1.x) { //hitting the "x" button on Gamepad 1 will cause the two servos to return to their original position
                 lServoArm.setPosition(lServoArmInit);
                 rServoArm.setPosition(rServoArmInit);
             }
