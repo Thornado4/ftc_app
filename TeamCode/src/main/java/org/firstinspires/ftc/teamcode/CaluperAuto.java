@@ -5,8 +5,13 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+
+import java.util.Locale;
 
 /**
  * Created by Ian on 11/2/2017.
@@ -33,6 +38,8 @@ public class CaluperAuto extends LinearOpMode {
     private double rServoArmInit = .1;
     private double lServoArmGrasp = .43;
     private double rServoArmGrasp = .50;
+    private double lServoArmAlmostGrasp = .50;
+    private double rServoArmAlmostGrasp = .43;
     private double speedFactor = .5;
     private int controlMode = 1;
 
@@ -56,44 +63,47 @@ public class CaluperAuto extends LinearOpMode {
         rbDrive.setPower(0);
     }
 
+    public void jewelBumper(double pos, long time) throws InterruptedException { // Move Jewel Bumper
+        jewelArm.setPosition(pos);                 // when pos is 0, jewel bumper is lowered
+        sleep(time);                               // when pos is 1, jewel bumper is raised
+        jewelArm.setPosition(0.5);
+    }
+
     public void bumpRedJewel(int direction) throws InterruptedException {  // Knock the red jewel off. For blue side only.
-        jewelArm.setPosition(1);                    // Lower jewel bumper
-        sleep(3000);
-        jewelArm.setPosition(.5);
-        if(sensorColor.red() > sensorColor.blue()) {// Is detected jewel red?
-            drive(0.5 * direction, 0.5 * direction);// Drive to knock it off.
-            sleep(600);
+        jewelBumper(0, 2000);                              // Lower jewel bumper
+        if(sensorColor.red() > sensorColor.blue()) {       // Is detected jewel red?
+            drive(0.2 * direction, 0.2 * direction);       // Drive to knock it off.
+            sleep(300);
             driveStop();
+            jewelBumper(1, 2000);                          // Raise Jewel Bumper
         } else if(sensorColor.blue() > sensorColor.red()) {// Is detected jewel blue?
-            drive(-0.5 * direction, -0.5 * direction);     // Drive to knock off red jewel
+            drive(-0.25 * direction, -0.25 * direction);   // Drive to knock off red jewel
             sleep(600);                                    // it's called indirect proof
+            driveStop();
+            jewelBumper(1, 2000);                          // Raise Jewel Bumper
             drive(0.5 * direction, 0.5 * direction);       // Drive back on stone (We won't need it later on)
             sleep(600);
             driveStop();
         }
-        jewelArm.setPosition(0);                           // Raise jewel bumper
-        sleep(3000);
-        jewelArm.setPosition(.5);
     }
 
-    public void bumpBlueJewel(int direction) {              // Knock the blue jewel off. For red side only.
-        jewelArm.setPosition(1);                            // Lower jewel bumper
-        sleep(3000);
-        jewelArm.setPosition(.5);
+    public void bumpBlueJewel(int direction) throws InterruptedException {              // Knock the blue jewel off. For red side only.
+        jewelBumper(0, 2000);                               // Lower Jewel Bumper
         if(sensorColor.blue() > sensorColor.red()) {        // Is detected jewel blue?
-            drive(0.5, 0.5);                                // Drive to knock it off.
+            drive(0.25 * direction, 0.25 * direction);      // Drive to knock it off.
             sleep(600);
             driveStop();
+            jewelBumper(1, 2000);                           // Raise Jewel Bumper
         } else if(sensorColor.red() > sensorColor.blue()) { // Is detected jewel red?
-            drive(-0.5 * direction, -0.5 * direction);      // Drive to knock off blue jewel
+            drive(-0.25 * direction, -0.25 * direction);    // Drive to knock off blue jewel
             sleep(600);                                     // it's called indirect proof
+            driveStop();
+            jewelBumper(1, 2000);                           // Raise Jewel Bumper
             drive(0.5 * direction, 0.5 * direction);        // Drive back on stone (We won't need it later on)
             sleep(600);
             driveStop();
         }
-        jewelArm.setPosition(0);                            // Raise jewel bumper
-        sleep(3000);
-        jewelArm.setPosition(.5);
+
     }
 
     @Override
@@ -107,7 +117,7 @@ public class CaluperAuto extends LinearOpMode {
 
         lServoArm = hardwareMap.servo.get("lServoArm"); //Left servo arm, Hub 1, port 2
         rServoArm = hardwareMap.servo.get("rServoArm"); //Right servo arm, Hub 2, port 1
-        jewelArm = hardwareMap.servo.get("ja"); //Jewel Arm, Hub 1, Port 3
+        jewelArm = hardwareMap.servo.get("jewelArm"); //Jewel Arm, Hub 2, Port 3
 
         sensorColor = hardwareMap.get(ColorSensor.class, "sensor_color_distance");
 
@@ -121,6 +131,8 @@ public class CaluperAuto extends LinearOpMode {
         rfDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rbDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         liftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        lfDrive.setDirection(DcMotor.Direction.REVERSE);
+        lbDrive.setDirection(DcMotor.Direction.REVERSE);
 
         lServoArm.setPosition(lServoArmInit);
         rServoArm.setPosition(rServoArmInit);
@@ -163,57 +175,58 @@ public class CaluperAuto extends LinearOpMode {
         waitForStart();
         timer.reset();
         // =======================================AUTONOMOUS========================================
-        while(timer.seconds() < 30 || !AutoFinished) {
-            if(blue) {
+        telemetry.addData("Code Status", "Auto Go!");
+        telemetry.update();
+            if(red) {
                 if(leftStone) {
                     // Ava's Auto
-                    bumpRedJewel(1);
-                    drive(0.8, 0.6);
-                    sleep(2000);
+                    bumpBlueJewel(1);
+                    drive(0.3, 0.6);
+                    sleep(500);
                     driveStop();
-                    AutoFinished = true;               // now that this is true, the loop can break.
+                    AutoFinished = true;              // now that this is true, the loop can break.
                 } else if(rightStone) {
-                    // Thor's Auto
-                    bumpRedJewel(1);
-                    drive(0.6, 0.65);
-                    sleep(2000);
+                    // Jake's Auto.
+                    bumpBlueJewel(-1);
+                    drive(0.3, 0.3);
+                    sleep(1200);
                     driveStop();
                     AutoFinished = true;
                 }
-            } else if (red) {
-                if(leftStone) {
-                    // Jake's Auto. This is just a placeholder until he gets his final flowchart finished
-                    bumpBlueJewel(-1);
-                    drive(-0.6, -0.65);
-                    sleep(2000);
+            } else if (blue) {
+                if(rightStone) {
+                    // Thor's Auto
+                    bumpRedJewel(-1);
+                    drive(-0.3, -0.3);
+                    sleep(1200);
                     driveStop();
                     AutoFinished = true;
-                } else if(rightStone) {
+                } else if(leftStone) {
                     // Ian's Auto
-                    bumpBlueJewel(-1);
-                    drive(-0.8, -0.6);
-                    sleep(2000);
+                    bumpRedJewel(-1);
+                    drive(-0.6, -0.3);
+                    sleep(1000);
                     driveStop();
                     AutoFinished = true;
                 }
             }
-        }
-        driveStop();                                                   // Stop robot
         while(timer.seconds() < 30) {                         // Robot waits for Auto time to be up.
             sleep(50);
-            telemetry.addData("Auto finished early!", timer.seconds());
-            telemetry.update();
+            telemetry.addData("Auto finished early!", String.format(Locale.US, "%.02f", timer.seconds()));
+            telemetry.update(); // Formatting is there just because all those decimal places are unnecessary
         }
         timer.reset();
         // =========================================TRANSITION======================================
-        while(timer.seconds() < 8 || !gamepad1.a) {
-            telemetry.addData("Auto finished!", timer.seconds());
-            telemetry.addData("At 8s, Teleop will begin", "Override by pressing A"); // Just in case
-            telemetry.update();                                        // timer won't let robot move
+        while(!gamepad1.a) {
+            telemetry.addData("Code Status", "Waiting for TeleOp!");
+            telemetry.addData("To begin TeleOp, press", "A (Driver)");
+            telemetry.update();
             sleep(50);
         }
         timer.reset();
         //=================================TELEOP===================================================
+        telemetry.addData("Code Status", "Teleop Go!");
+        telemetry.update();
         while(opModeIsActive()) {
             if(gamepad1.right_bumper) {       // full power option
                 speedFactor = 1;
@@ -227,7 +240,7 @@ public class CaluperAuto extends LinearOpMode {
                 controlMode = 1;
             }
 
-            switch(controlMode) {       // apply power from joysticks to drive train based on control mode
+            switch(controlMode) {             // apply power from joysticks to drive train based on control mode
                 case 1:
                     lfDrive.setPower((-gamepad1.left_stick_y * Math.abs(gamepad1.left_stick_y)) * speedFactor); //exponential scale algorithm
                     lbDrive.setPower((-gamepad1.left_stick_y * Math.abs(gamepad1.left_stick_y)) * speedFactor); //tank drive
@@ -248,9 +261,17 @@ public class CaluperAuto extends LinearOpMode {
                     break;
             }
 
+            if (gamepad2.dpad_up) {                     // Lift Glypder!
+                liftMotor.setPower(1);
+            }
+            else if (gamepad2.dpad_down) {              // Lower Glypher!
+                liftMotor.setPower(-1);
+            }
+            else {
+                liftMotor.setPower(0);                  // Stop Glypher!
+            }
 
-
-            if (gamepad2.dpad_up) {
+            /*if (gamepad2.dpad_up) {                   //unnecessary
                 liftMotor.setPower(1);
             }
             else if (gamepad2.dpad_down) {
@@ -258,17 +279,7 @@ public class CaluperAuto extends LinearOpMode {
             }
             else {
                 liftMotor.setPower(0);
-            }
-
-            if (gamepad2.dpad_up) {
-                liftMotor.setPower(1);
-            }
-            else if (gamepad2.dpad_down) {
-                liftMotor.setPower(-1);
-            }
-            else {
-                liftMotor.setPower(0);
-            }
+            }*/
             if (gamepad1.b) { //hitting the "b" button on Gamepad 1 will cause the two servos to grasp the glyph
                 lServoArm.setPosition(lServoArmGrasp);
                 rServoArm.setPosition(rServoArmGrasp);
@@ -286,13 +297,21 @@ public class CaluperAuto extends LinearOpMode {
                 lServoArm.setPosition(lServoArmInit);
                 rServoArm.setPosition(rServoArmInit);
             }
-            if (gamepad2.y) { //hitting the "y" button on Gamepad 2 will cause the jewel arm to drop
+            if (gamepad1.y) {   //hitting the "y" button on Gamepad 1 will cause the glypher servos to expand slightly larger than grasping the glyphs.
+                lServoArm.setPosition(lServoArmAlmostGrasp);
+                rServoArm.setPosition(rServoArmAlmostGrasp);
+            }
+            if (gamepad2.y) {   //hitting the "y" button on Gamepad 2 will cause the glypher servos to expand slightly larger than grasping the glyphs.
+                lServoArm.setPosition(lServoArmAlmostGrasp);
+                rServoArm.setPosition(rServoArmAlmostGrasp);
+            }
+            if (gamepad2.y) { //hitting the "y" button on Gamepad 2 will cause the jewel arm to drop. Could be handy.
                 jewelArm.setPosition(1);
             } else {
                 jewelArm.setPosition(.5);
             }
 
-            if (gamepad2.a) { //hitting the "a" button on Gamepad 2 will cause the jewel arm to lift
+            if (gamepad2.a) { //hitting the "a" button on Gamepad 2 will cause the jewel arm to lift. Could be handy.
                 jewelArm.setPosition(0);
             } else {
                 jewelArm.setPosition(.5);
