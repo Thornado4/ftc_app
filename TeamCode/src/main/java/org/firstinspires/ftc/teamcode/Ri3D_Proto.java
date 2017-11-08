@@ -13,7 +13,7 @@ import com.qualcomm.robotcore.util.Range;
 
 @TeleOp (name="ri3d_teleop",group="Opmode")
 
-public class RI3D_Proto extends OpMode {
+public class Ri3D_Proto extends OpMode {
 
     public DcMotor lfDrive, rfDrive, lbDrive, rbDrive, liftMotor;  //Left front drive, right front drive, left back drive, right back drive.
     public Servo lServoArm, rServoArm, jewelArm; //lServoArm in port 5, rServoArm in port 4
