@@ -14,9 +14,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 /**
  * Created by Ian on 11/8/2017.
  */
-
 @Autonomous(name="caluper_trans_test",group="LinearOpMode")
-//@Disabled
+@Disabled
 public class caluper_trans_test extends LinearOpMode {              // Just an auto that supplies
                                                                     // as a clone to caluper_auto
     ElapsedTime timer = new ElapsedTime();                          // until we know AutoTransitioner works
