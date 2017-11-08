@@ -36,12 +36,6 @@ public class caluper_auto extends LinearOpMode {
 
     private double lServoArmInit = .73;
     private double rServoArmInit = .1;
-    private double lServoArmGrasp = .43;
-    private double rServoArmGrasp = .50;
-    private double lServoArmAlmostGrasp = .50;
-    private double rServoArmAlmostGrasp = .43;
-    private double speedFactor = .5;
-    private int controlMode = 1;
 
     boolean blue = false;
     boolean red  = false;
@@ -176,142 +170,35 @@ public class caluper_auto extends LinearOpMode {
         // =======================================AUTONOMOUS========================================
         telemetry.addData("Code Status", "Auto Go!");
         telemetry.update();
-            if(red) {
-                if(leftStone) {
-                    // Ava's Auto
-                    bumpBlueJewel(1);
-                    drive(0.3, 0.3);
-                    sleep(500);
-                    driveStop();
-                } else if(rightStone) {
-                    // Jake's Auto.
-                    bumpBlueJewel(1);
-                    drive(0.3, 0.3);
-                    sleep(1200);
-                    driveStop();
-                }
-            } else if (blue) {
-                if(rightStone) {
-                    // Thor's Auto
-                    bumpRedJewel(-1);
-                    drive(-0.3, -0.3);
-                    sleep(1200);
-                    driveStop();
-                } else if(leftStone) {
-                    // Ian's Auto
-                    bumpRedJewel(-1);
-                    drive(-0.6, -0.3);
-                    sleep(1000);
-                    driveStop();
-                }
+        if(red) {
+            if(leftStone) {
+                // Ava's Auto
+                bumpBlueJewel(1);
+                drive(0.3, 0.3);
+                sleep(500);
+                driveStop();
+            } else if(rightStone) {
+                // Jake's Auto.
+                bumpBlueJewel(1);
+                drive(0.3, 0.3);
+                sleep(1200);
+                driveStop();
             }
-        while(timer.seconds() < 30) {                         // Robot waits for Auto time to be up.
-            sleep(50);
-            telemetry.addData("Auto finished early!", String.format(Locale.US, "%.02f", timer.seconds()));
-            telemetry.update(); // Formatting is there just because all those decimal places are unnecessary
+        } else if (blue) {
+            if (rightStone) {
+                // Thor's Auto
+                bumpRedJewel(-1);
+                drive(-0.3, -0.3);
+                sleep(1200);
+                driveStop();
+            } else if (leftStone) {
+                // Ian's Auto
+                bumpRedJewel(-1);
+                drive(-0.6, -0.3);
+                sleep(1000);
+                driveStop();
+            }
         }
-        timer.reset();
-        // =========================================TRANSITION======================================
-        while(!gamepad1.a) {
-            telemetry.addData("Code Status", "Waiting for TeleOp!");
-            telemetry.addData("To begin TeleOp, press", "A (Driver)");
-            telemetry.update();
-            sleep(50);
-        }
-        timer.reset();
-        //=================================TELEOP===================================================
-        telemetry.addData("Code Status", "Teleop Go!");
-        telemetry.update();
-        while(opModeIsActive()) {
-            if(gamepad1.right_bumper) {       // full power option
-                speedFactor = 1;
-            } else {                          // half power option
-                speedFactor = .5;
-            }
-
-            if(gamepad1.dpad_up) {            // differential lock if DPad up is held
-                controlMode = 2;
-            } else {                          // classic tank drive
-                controlMode = 1;
-            }
-
-            switch(controlMode) {             // apply power from joysticks to drive train based on control mode
-                case 1:
-                    lfDrive.setPower((-gamepad1.left_stick_y * Math.abs(gamepad1.left_stick_y)) * speedFactor); //exponential scale algorithm
-                    lbDrive.setPower((-gamepad1.left_stick_y * Math.abs(gamepad1.left_stick_y)) * speedFactor); //tank drive
-                    rfDrive.setPower((gamepad1.right_stick_y * Math.abs(gamepad1.right_stick_y)) * speedFactor);
-                    rbDrive.setPower((gamepad1.right_stick_y * Math.abs(gamepad1.right_stick_y)) * speedFactor);
-                    break;
-                case 2:
-                    lfDrive.setPower((-gamepad1.right_stick_y * Math.abs(gamepad1.right_stick_y)) * speedFactor); //exponential scale algorithm
-                    lbDrive.setPower((-gamepad1.right_stick_y * Math.abs(gamepad1.right_stick_y)) * speedFactor); //differential lock
-                    rfDrive.setPower((gamepad1.right_stick_y * Math.abs(gamepad1.right_stick_y)) * speedFactor);
-                    rbDrive.setPower((gamepad1.right_stick_y * Math.abs(gamepad1.right_stick_y)) * speedFactor);
-                    break;
-                default:
-                    lfDrive.setPower((-gamepad1.left_stick_y * Math.abs(gamepad1.left_stick_y)) * speedFactor); //exponential scale algorithm
-                    lbDrive.setPower((-gamepad1.left_stick_y * Math.abs(gamepad1.left_stick_y)) * speedFactor); //tank drive
-                    rfDrive.setPower((gamepad1.right_stick_y * Math.abs(gamepad1.right_stick_y)) * speedFactor);
-                    rbDrive.setPower((gamepad1.right_stick_y * Math.abs(gamepad1.right_stick_y)) * speedFactor);
-                    break;
-            }
-
-            if (gamepad2.dpad_up) {                     // Lift Glypder!
-                liftMotor.setPower(1);
-            }
-            else if (gamepad2.dpad_down) {              // Lower Glypher!
-                liftMotor.setPower(-1);
-            }
-            else {
-                liftMotor.setPower(0);                  // Stop Glypher!
-            }
-
-            /*if (gamepad2.dpad_up) {                   //unnecessary
-                liftMotor.setPower(1);
-            }
-            else if (gamepad2.dpad_down) {
-                liftMotor.setPower(-1);
-            }
-            else {
-                liftMotor.setPower(0);
-            }*/
-            if (gamepad1.b) { //hitting the "b" button on Gamepad 1 will cause the two servos to grasp the glyph
-                lServoArm.setPosition(lServoArmGrasp);
-                rServoArm.setPosition(rServoArmGrasp);
-            }
-            if (gamepad1.x) { //hitting the "x" button on Gamepad 1 will cause the two servos to return to their original position
-                lServoArm.setPosition(lServoArmInit);
-                rServoArm.setPosition(rServoArmInit);
-            }
-
-            if (gamepad2.b) { //hitting the "b" button on Gamepad 2 will cause the two servos to grasp the glyph
-                lServoArm.setPosition(lServoArmGrasp);
-                rServoArm.setPosition(rServoArmGrasp);
-            }
-            if (gamepad2.x) { //hitting the "x" button on Gamepad 2 will cause the two servos to return to their original position
-                lServoArm.setPosition(lServoArmInit);
-                rServoArm.setPosition(rServoArmInit);
-            }
-            if (gamepad1.y) {   //hitting the "y" button on Gamepad 1 will cause the glypher servos to expand slightly larger than grasping the glyphs.
-                lServoArm.setPosition(lServoArmAlmostGrasp);
-                rServoArm.setPosition(rServoArmAlmostGrasp);
-            }
-            if (gamepad2.y) {   //hitting the "y" button on Gamepad 2 will cause the glypher servos to expand slightly larger than grasping the glyphs.
-                lServoArm.setPosition(lServoArmAlmostGrasp);
-                rServoArm.setPosition(rServoArmAlmostGrasp);
-            }
-            if (gamepad2.y) { //hitting the "y" button on Gamepad 2 will cause the jewel arm to drop. Could be handy.
-                jewelArm.setPosition(1);
-            } else {
-                jewelArm.setPosition(.5);
-            }
-
-            if (gamepad2.a) { //hitting the "a" button on Gamepad 2 will cause the jewel arm to lift. Could be handy.
-                jewelArm.setPosition(0);
-            } else {
-                jewelArm.setPosition(.5);
-            }
-        }           // End of Teleop
     }
 }
 // Please let Ian H. know if there is anything that needs to be fixed!

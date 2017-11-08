@@ -17,8 +17,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 @Autonomous(name="caluper_trans_test",group="LinearOpMode")
 //@Disabled
-public class CaluperAutoTransit extends LinearOpMode {              // Just an auto that supplies
-                                                                    // as a clone to ...
+public class caluper_trans_test extends LinearOpMode {              // Just an auto that supplies
+                                                                    // as a clone to caluper_auto
     ElapsedTime timer = new ElapsedTime();                          // until we know AutoTransitioner works
 
     public DcMotor lfDrive;     // Left Front Drive
@@ -35,12 +35,6 @@ public class CaluperAutoTransit extends LinearOpMode {              // Just an a
 
     private double lServoArmInit = .73;
     private double rServoArmInit = .1;
-    /*private double lServoArmGrasp = .43;
-    private double rServoArmGrasp = .50;
-    private double lServoArmAlmostGrasp = .50;
-    private double rServoArmAlmostGrasp = .43;
-    private double speedFactor = .5;
-    private int controlMode = 1;*/
 
     boolean blue = false;
     boolean red  = false;
