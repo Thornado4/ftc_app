@@ -17,9 +17,9 @@ import java.util.Locale;
  * Created by Ian on 11/2/2017.
  */
 
-@Autonomous(name="CaluperAuto", group="LinearOpMode")
+@Autonomous(name="caluper_auto", group="LinearOpMode")
 //@Disabled
-public class CaluperAuto extends LinearOpMode {
+public class caluper_auto extends LinearOpMode {
     ElapsedTime timer = new ElapsedTime();
 
     public DcMotor lfDrive;     // Left Front Drive
@@ -47,7 +47,6 @@ public class CaluperAuto extends LinearOpMode {
     boolean red  = false;
     boolean rightStone = false;
     boolean leftStone  = false;
-    boolean AutoFinished = false;
 
     public void drive(double leftPower, double rightPower) {    // Turns on motors. The reason
         lfDrive.setPower(leftPower);                            // there are two powers is so the
@@ -70,7 +69,7 @@ public class CaluperAuto extends LinearOpMode {
     }
 
     public void bumpRedJewel(int direction) throws InterruptedException {  // Knock the red jewel off. For blue side only.
-        jewelBumper(0, 2000);                              // Lower jewel bumper
+        jewelBumper(0, 2500);                              // Lower jewel bumper
         if(sensorColor.red() > sensorColor.blue()) {       // Is detected jewel red?
             drive(0.25 * direction, 0.25 * direction);       // Drive to knock it off.
             sleep(300);
@@ -88,7 +87,7 @@ public class CaluperAuto extends LinearOpMode {
     }
 
     public void bumpBlueJewel(int direction) throws InterruptedException {              // Knock the blue jewel off. For red side only.
-        jewelBumper(0, 2000);                               // Lower Jewel Bumper
+        jewelBumper(0, 2500);                               // Lower Jewel Bumper
         if(sensorColor.blue() > sensorColor.red()) {        // Is detected jewel blue?
             drive(-0.25 * direction, -0.25 * direction);    // Drive to knock off blue jewel
             sleep(300);                                     // it's called indirect proof
@@ -135,7 +134,7 @@ public class CaluperAuto extends LinearOpMode {
 
         lServoArm.setPosition(lServoArmInit);
         rServoArm.setPosition(rServoArmInit);
-        jewelArm.setPosition(.5);
+        jewelBumper(0.7, 800);                                // to keep robot within size limit
 
         // =======================BEGIN SELECTION===================================================
         telemetry.addData("Selection", "X for Blue, B for Red");        // Which side are you on?
@@ -171,6 +170,7 @@ public class CaluperAuto extends LinearOpMode {
         }
 
         telemetry.update();
+        //AutoTransitioner.transitionOnStop(this, "caluper_teleop");     // Once Auto is done, quickly switch to our Teleop (Thank you KNO3!)
         waitForStart();
         timer.reset();
         // =======================================AUTONOMOUS========================================
@@ -183,14 +183,12 @@ public class CaluperAuto extends LinearOpMode {
                     drive(0.3, 0.3);
                     sleep(500);
                     driveStop();
-                    AutoFinished = true;              // now that this is true, the loop can break.
                 } else if(rightStone) {
                     // Jake's Auto.
                     bumpBlueJewel(1);
                     drive(0.3, 0.3);
                     sleep(1200);
                     driveStop();
-                    AutoFinished = true;
                 }
             } else if (blue) {
                 if(rightStone) {
@@ -199,14 +197,12 @@ public class CaluperAuto extends LinearOpMode {
                     drive(-0.3, -0.3);
                     sleep(1200);
                     driveStop();
-                    AutoFinished = true;
                 } else if(leftStone) {
                     // Ian's Auto
                     bumpRedJewel(-1);
                     drive(-0.6, -0.3);
                     sleep(1000);
                     driveStop();
-                    AutoFinished = true;
                 }
             }
         while(timer.seconds() < 30) {                         // Robot waits for Auto time to be up.
