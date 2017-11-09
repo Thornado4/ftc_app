@@ -127,7 +127,7 @@ public class caluper_auto extends LinearOpMode {
 
         lServoArm.setPosition(lServoArmGrasp);
         rServoArm.setPosition(rServoArmGrasp);
-        jewelBumper(0.7, 1800);
+        //jewelBumper(0.7, 1800);
 
         // =======================BEGIN SELECTION===================================================
         telemetry.addData("Selection", "X for Blue, B for Red");        // Which side are you on?
