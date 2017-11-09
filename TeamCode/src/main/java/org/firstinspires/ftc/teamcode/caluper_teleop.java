@@ -229,13 +229,13 @@ public class caluper_teleop extends OpMode {
             rServoArm.setPosition(rServoArmAlmostGrasp);
         }
 
-        if (gamepad2.y) {
+        if (gamepad2.dpad_right) {
             jewelArm.setPosition(1);
         }
-        else {                                  //Used only for testing.
+        else {
             jewelArm.setPosition(.5);
         }
-        if (gamepad2.a) {
+        if (gamepad2.dpad_left) {
             jewelArm.setPosition(0);
         }
         else {
