@@ -62,15 +62,15 @@ public class caluper_auto extends LinearOpMode {
     }
 
     public void bumpRedJewel(int direction) throws InterruptedException {  // Knock the red jewel off. For blue side only.
-        jewelBumper(0, 2300);                              // Lower jewel bumper
+        jewelBumper(0, 2700);                              // Lower jewel bumper
         if(sensorColor.red() > sensorColor.blue()) {       // Is detected jewel red?
             drive(0.25 * direction, 0.25 * direction);       // Drive to knock it off.
             sleep(300);
             driveStop();
-            jewelBumper(1, 2000);                          // Raise Jewel Bumper
+            jewelBumper(1, 2300);                          // Raise Jewel Bumper
         } else if(sensorColor.blue() > sensorColor.red()) {// Is detected jewel blue?
             drive(-0.25 * direction, -0.25 * direction);   // Drive to knock off red jewel
-            sleep(600);                                    // it's called indirect proof
+            sleep(500);                                    // it's called indirect proof
             driveStop();
             jewelBumper(1, 2300);                          // Raise Jewel Bumper
             drive(0.5 * direction, 0.5 * direction);       // Drive back on stone (We won't need it later on)
@@ -80,12 +80,12 @@ public class caluper_auto extends LinearOpMode {
     }
 
     public void bumpBlueJewel(int direction) throws InterruptedException {              // Knock the blue jewel off. For red side only.
-        jewelBumper(0, 2300);                               // Lower Jewel Bumper
+        jewelBumper(0, 2700);                               // Lower Jewel Bumper
         if(sensorColor.blue() > sensorColor.red()) {        // Is detected jewel blue?
             drive(-0.25 * direction, -0.25 * direction);    // Drive to knock off blue jewel
             sleep(300);                                     // it's called indirect proof
             driveStop();
-            jewelBumper(1, 2000);                           // Raise Jewel Bumper
+            jewelBumper(1, 2300);                           // Raise Jewel Bumper
             drive(0.5 * direction, 0.5 * direction);        // Drive back on stone (We won't need it later on)
             sleep(600);
             driveStop();
@@ -188,7 +188,7 @@ public class caluper_auto extends LinearOpMode {
                 // Thor's Auto
                 bumpRedJewel(-1);
                 drive(-0.3, -0.3);
-                sleep(1200);
+                sleep(700);
                 driveStop();
             } else if (leftStone) {
                 // Ian's Auto
